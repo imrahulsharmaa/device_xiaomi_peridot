@@ -39,14 +39,42 @@ import java.io.FileReader;
 
 public final class TouchSamplingUtils {
     private static final String TAG = "TouchSamplingUtils";
-    public static final String HTSR_FILE = "/sys/devices/platform/goodix_ts.0/switch_report_rate";
+    private static final String HTSR_GOODIX_FILE = "/sys/devices/platform/goodix_ts.0/switch_report_rate";
+    private static final String HTSR_FOCALTECH_FILE = "/sys/bus/spi/drivers/focaltech_ts/spi1.0/switch_report_rate";
     public static final String SCONFIG_FILE = "/sys/class/thermal/thermal_message/sconfig";
+    
+    private static String sHtsrFile = null;
+
+    /**
+     * Gets the appropriate HTSR file path, checking availability and caching the result.
+     * First checks for goodix_ts.0, then falls back to focaltech_ts if not available.
+     */
+    public static String getHtsrFile() {
+        if (sHtsrFile != null) {
+            return sHtsrFile;
+        }
+        
+        // First try goodix_ts.0
+        if (new File(HTSR_GOODIX_FILE).exists()) {
+            sHtsrFile = HTSR_GOODIX_FILE;
+            Log.d(TAG, "Using goodix HTSR file: " + sHtsrFile);
+        } else if (new File(HTSR_FOCALTECH_FILE).exists()) {
+            sHtsrFile = HTSR_FOCALTECH_FILE;
+            Log.d(TAG, "Using focaltech HTSR file: " + sHtsrFile);
+        } else {
+            // Fallback to goodix as default
+            sHtsrFile = HTSR_GOODIX_FILE;
+            Log.w(TAG, "Neither HTSR file exists, using goodix as default: " + sHtsrFile);
+        }
+        
+        return sHtsrFile;
+    }
 
     public static void restoreSamplingValue(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(
                 TouchSamplingSettingsFragment.SHAREDHTSR, Context.MODE_PRIVATE);
         int htsrState = sharedPref.getInt(TouchSamplingSettingsFragment.SHAREDHTSR, 0);
-        FileUtils.writeLine(HTSR_FILE, Integer.toString(htsrState));
+        FileUtils.writeLine(getHtsrFile(), Integer.toString(htsrState));
     }
 
     /**

@@ -131,6 +131,7 @@
 
 # Touch Sampling
 /sys/devices/platform/goodix_ts.0/switch_report_rate                                             u:object_r:sysfs_htsr:s0
+/sys/bus/spi/drivers/focaltech_ts/spi1.0/switch_report_rate                                      u:object_r:sysfs_htsr:s0
 
 # Extcon
 /sys/devices/platform/soc/soc:spf_core_platform/soc:spf_core_platform:lpass-cdc/wcd937x-codec/extcon(/.*)? u:object_r:sysfs_extcon:s0
